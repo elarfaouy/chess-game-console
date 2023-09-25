@@ -26,11 +26,13 @@ public class Pawn extends Piece {
         int operation = this.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
 
         Square up = board[actualSquare.getY() - operation][actualSquare.getX()];
-        if (up.getPiece() == null) squareList.add(up);
+        if (up.getPiece() == null){
+            squareList.add(up);
 
-        if (!this.isMoved()) {
-            Square forward = board[actualSquare.getY() - 2 * operation][actualSquare.getX()];
-            if (forward.getPiece() == null) squareList.add(forward);
+            if (!this.isMoved()) {
+                Square forward = board[actualSquare.getY() - 2 * operation][actualSquare.getX()];
+                if (forward.getPiece() == null) squareList.add(forward);
+            }
         }
 
         if (actualSquare.getX() > 0) {
