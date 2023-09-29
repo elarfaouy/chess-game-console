@@ -1,12 +1,11 @@
 import services.BoardService;
+import services.GameService;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
 
-        BoardService boardService = new BoardService();
-        boardService.printChessboard();
-        boardService.movePawn();
-        boardService.printChessboard();
+        GameService gameService = new GameService();
+        gameService.startGame();
     }
 }
