@@ -7,8 +7,8 @@ public class GameService {
     private Game game = new Game();
     private final Board boardEntity = new Board();
     private final BoardService boardService = new BoardService(boardEntity);
-    private String playerWhite;
-    private String playerBlack;
+    private String playerWhite = "hicham"; // todo : just for testing after that should remove initialization
+    private String playerBlack = "hamza";
     private PieceSide currentPlayer = PieceSide.WHITE;
 
     public void startGame() {

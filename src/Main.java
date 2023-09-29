@@ -6,6 +6,6 @@ public class Main {
         System.out.println("Hello world!");
 
         GameService gameService = new GameService();
-        gameService.startGame();
+        gameService.inGame();
     }
 }
