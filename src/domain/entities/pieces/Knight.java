@@ -2,11 +2,12 @@ package domain.entities.pieces;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.movements.KnightMovementLogic;
 import domain.enums.PieceSide;
 
 import java.util.List;
 
-public class Knight extends Piece {
+public class Knight extends Piece implements KnightMovementLogic {
     public Knight(PieceSide pieceSide) {
         super(pieceSide);
     }
@@ -18,6 +19,6 @@ public class Knight extends Piece {
 
     @Override
     public List<Square> abilityMoves(Square[][] board) {
-        return null;
+        return KnightMovementLogic.super.getValidMoves(board);
     }
 }

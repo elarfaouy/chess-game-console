@@ -2,11 +2,13 @@ package domain.entities.pieces;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.movements.RookMovementLogic;
 import domain.enums.PieceSide;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Rook extends Piece {
+public class Rook extends Piece implements RookMovementLogic {
     public Rook(PieceSide pieceSide) {
         super(pieceSide);
     }
@@ -18,6 +20,6 @@ public class Rook extends Piece {
 
     @Override
     public List<Square> abilityMoves(Square[][] board) {
-        return null;
+        return RookMovementLogic.super.getValidMoves(board);
     }
 }

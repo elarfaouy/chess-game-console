@@ -2,11 +2,12 @@ package domain.entities.pieces;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.movements.BishopMovementLogic;
 import domain.enums.PieceSide;
 
 import java.util.List;
 
-public class Bishop extends Piece {
+public class Bishop extends Piece implements BishopMovementLogic {
 
     public Bishop(PieceSide pieceSide) {
         super(pieceSide);
@@ -19,6 +20,6 @@ public class Bishop extends Piece {
 
     @Override
     public List<Square> abilityMoves(Square[][] board) {
-        return null;
+        return BishopMovementLogic.super.getValidMoves(board);
     }
 }

@@ -10,4 +10,8 @@ public class Board {
     public Square[][] getBoard() {
         return board;
     }
+
+    public Square getSquare(int row, int col) {
+        return board[row][col];
+    }
 }
