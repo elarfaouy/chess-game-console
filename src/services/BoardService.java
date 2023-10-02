@@ -89,11 +89,14 @@ public class BoardService {
         }
 
         sourceSquare.setPiece(null);
+        pieceToMove.setMoved(true);
         targetSquare.setPiece(pieceToMove);
 
         // check for promoted the pawn
-        if (pieceToMove instanceof Pawn && (targetSquare.getY() == 0 || targetSquare.getY() == 7)) {
-            promotePawn(targetSquare);
+        if (pieceToMove instanceof Pawn) {
+            if (targetSquare.getY() == 0 || targetSquare.getY() == 7){
+                ((Pawn) pieceToMove).promotePawn();
+            }
         }
 
         return true;
@@ -104,33 +107,5 @@ public class BoardService {
         List<Square> validMoves = pieceToMove.abilityMoves(board);
 
         return validMoves.contains(targetSquare);
-    }
-
-    private void promotePawn(Square square) {
-        System.out.println("Pawn promotion! Enter the piece to promote to (Q, R, N, or B): ");
-        String promotionChoice = scanner.nextLine().toUpperCase();
-
-        Piece chosenPiece = square.getPiece();
-        Piece newPiece;
-
-        switch (promotionChoice) {
-            case "Q":
-                newPiece = new Queen(chosenPiece.getPieceSide());
-                break;
-            case "R":
-                newPiece = new Rook(chosenPiece.getPieceSide());
-                break;
-            case "N":
-                newPiece = new Knight(chosenPiece.getPieceSide());
-                break;
-            case "B":
-                newPiece = new Bishop(chosenPiece.getPieceSide());
-                break;
-            default:
-                System.out.println("Invalid promotion choice. Promoting to Queen by default.");
-                newPiece = new Queen(chosenPiece.getPieceSide());
-        }
-
-        square.setPiece(newPiece);
     }
 }
