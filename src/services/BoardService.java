@@ -83,7 +83,26 @@ public class BoardService {
         Piece pieceToMove = move.getPiece();
         Piece capturedPiece = move.getCapturedPiece();
 
-        if (!isValidMove(sourceSquare, targetSquare)){
+        if (!isValidMove(sourceSquare, targetSquare)) {
+
+            // check for castling
+            if (pieceToMove instanceof King && capturedPiece instanceof Rook) {
+                King king = (King) pieceToMove;
+
+                if (king.canCastle(board, targetSquare)) {
+                    int isCastleQueenSide = targetSquare.getX() == 0 ? -1 : 1;
+                    board[sourceSquare.getY()][sourceSquare.getX() + 2 * isCastleQueenSide].setPiece(king);
+                    sourceSquare.setPiece(null);
+                    king.setMoved(true);
+
+                    board[sourceSquare.getY()][sourceSquare.getX() + isCastleQueenSide].setPiece(capturedPiece);
+                    targetSquare.setPiece(null);
+                    capturedPiece.setMoved(true);
+
+                    return true;
+                }
+            }
+
             System.out.println("Invalid move. This piece cannot move to the target square.");
             return false;
         }
@@ -94,7 +113,7 @@ public class BoardService {
 
         // check for promoted the pawn
         if (pieceToMove instanceof Pawn) {
-            if (targetSquare.getY() == 0 || targetSquare.getY() == 7){
+            if (targetSquare.getY() == 0 || targetSquare.getY() == 7) {
                 ((Pawn) pieceToMove).promotePawn();
             }
         }

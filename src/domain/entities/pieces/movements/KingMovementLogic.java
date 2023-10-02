@@ -2,6 +2,7 @@ package domain.entities.pieces.movements;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.Rook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,4 +41,75 @@ public interface KingMovementLogic {
 
         return squareList;
     }
+
+    default boolean canCastle(Square[][] board, Square targetSquare) {
+        Piece king = (Piece) this;
+        Piece rook = targetSquare.getPiece();
+
+        if (king.isMoved() || rook.isMoved() || king.getPieceSide() != rook.getPieceSide()) {
+            return false;
+        }
+
+        int startX = Math.min(king.getSquare().getX(), rook.getSquare().getX()) + 1;
+        int endX = Math.max(king.getSquare().getX(), rook.getSquare().getX());
+        int y = king.getSquare().getY();
+
+        for (int i = startX; i < endX; i++) {
+            if (board[y][i].getPiece() != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+//    default Square canRightCastle(Square[][] board) {
+//        Piece king = (Piece) this;
+//
+//        if (king.isMoved()) {
+//            return null;
+//        }
+//
+//        int x = king.getSquare().getX();
+//        int y = king.getSquare().getY();
+//
+//        Piece rook = board[y][0].getPiece();
+//
+//        if (rook instanceof Rook && rook.getPieceSide() == king.getPieceSide() && !rook.isMoved()) {
+//            for (int i = x + 1; i < 7; i++) {
+//                if (board[y][i].getPiece() != null) {
+//                    return null;
+//                }
+//            }
+//
+//            return rook.getSquare();
+//        }
+//
+//        return null;
+//    }
+//
+//    default Square canLeftCastle(Square[][] board) {
+//        Piece king = (Piece) this;
+//
+//        if (king.isMoved()) {
+//            return null;
+//        }
+//
+//        int x = king.getSquare().getX();
+//        int y = king.getSquare().getY();
+//
+//        Piece rook = board[y][0].getPiece();
+//
+//        if (rook instanceof Rook && rook.getPieceSide() == king.getPieceSide() && !rook.isMoved()) {
+//            for (int i = x - 1; i > 0; i--) {
+//                if (board[y][i].getPiece() != null) {
+//                    return null;
+//                }
+//            }
+//
+//            return rook.getSquare();
+//        }
+//
+//        return null;
+//    }
 }
