@@ -103,20 +103,43 @@ public class BoardService {
                 }
             }
 
+            // check for en passant
+            boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) + Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2;
+            if (pieceToMove instanceof Pawn && capturedPiece == null && isTargetInRangeForEnPassant) {
+                Pawn pawn = (Pawn) pieceToMove;
+
+                if (pawn.canEnPassant(board, targetSquare)) {
+                    int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
+                    Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
+
+                    sourceSquare.setPiece(null);
+                    pieceToMove.setMoved(true);
+                    targetSquare.setPiece(pieceToMove);
+
+                    opponentPawn.getSquare().setPiece(null);
+
+                    return true;
+                }
+            }
+
             System.out.println("Invalid move. This piece cannot move to the target square.");
             return false;
+        }
+
+        // check for promoted the pawn
+        if (pieceToMove instanceof Pawn) {
+            if (!pieceToMove.isMoved() && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2) {
+                ((Pawn) pieceToMove).setEnPassantVulnerable(true);
+            }
+
+            if (targetSquare.getY() == 0 || targetSquare.getY() == 7) {
+                ((Pawn) pieceToMove).promotePawn();
+            }
         }
 
         sourceSquare.setPiece(null);
         pieceToMove.setMoved(true);
         targetSquare.setPiece(pieceToMove);
-
-        // check for promoted the pawn
-        if (pieceToMove instanceof Pawn) {
-            if (targetSquare.getY() == 0 || targetSquare.getY() == 7) {
-                ((Pawn) pieceToMove).promotePawn();
-            }
-        }
 
         return true;
     }
