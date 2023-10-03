@@ -2,7 +2,9 @@ package domain.entities.pieces.movements;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.Pawn;
 import domain.enums.PieceSide;
+import services.InputService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ public interface PawnMovementLogic {
         int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
 
         Square up = board[actualSquare.getY() - operation][actualSquare.getX()];
-        if (up.getPiece() == null){
+        if (up.getPiece() == null) {
             squareList.add(up);
 
             if (!pawn.isMoved()) {
@@ -36,5 +38,24 @@ public interface PawnMovementLogic {
         }
 
         return squareList;
+    }
+
+    default void promotePawn() {
+        Piece pawn = (Piece) this;
+        Piece chosenPiece = pawn.getSquare().getPiece();
+        Piece newPiece = InputService.getPromotePawn(chosenPiece.getPieceSide());
+
+        pawn.getSquare().setPiece(newPiece);
+    }
+
+    default boolean canEnPassant(Square[][] board, Square targetSquare) {
+        Piece pawn = (Piece) this;
+
+        int axeYForEnPassant = pawn.getPieceSide().equals(PieceSide.WHITE) ? 3 : 4;
+        int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
+
+        Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
+
+        return opponentPawn instanceof Pawn && (opponentPawn.getSquare().getY() == pawn.getSquare().getY()) && (pawn.getSquare().getY() == axeYForEnPassant) && ((Pawn) opponentPawn).isEnPassantVulnerable();
     }
 }

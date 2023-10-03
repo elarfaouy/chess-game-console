@@ -83,18 +83,63 @@ public class BoardService {
         Piece pieceToMove = move.getPiece();
         Piece capturedPiece = move.getCapturedPiece();
 
-        if (!isValidMove(sourceSquare, targetSquare)){
+        if (!isValidMove(sourceSquare, targetSquare)) {
+
+            // check for castling
+            if (pieceToMove instanceof King && capturedPiece instanceof Rook) {
+                King king = (King) pieceToMove;
+
+                if (king.canCastle(board, targetSquare)) {
+                    int isCastleQueenSide = targetSquare.getX() == 0 ? -1 : 1;
+                    board[sourceSquare.getY()][sourceSquare.getX() + 2 * isCastleQueenSide].setPiece(king);
+                    sourceSquare.setPiece(null);
+                    king.setMoved(true);
+
+                    board[sourceSquare.getY()][sourceSquare.getX() + isCastleQueenSide].setPiece(capturedPiece);
+                    targetSquare.setPiece(null);
+                    capturedPiece.setMoved(true);
+
+                    return true;
+                }
+            }
+
+            // check for en passant
+            boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) + Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2;
+            if (pieceToMove instanceof Pawn && capturedPiece == null && isTargetInRangeForEnPassant) {
+                Pawn pawn = (Pawn) pieceToMove;
+
+                if (pawn.canEnPassant(board, targetSquare)) {
+                    int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
+                    Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
+
+                    sourceSquare.setPiece(null);
+                    pieceToMove.setMoved(true);
+                    targetSquare.setPiece(pieceToMove);
+
+                    opponentPawn.getSquare().setPiece(null);
+
+                    return true;
+                }
+            }
+
             System.out.println("Invalid move. This piece cannot move to the target square.");
             return false;
         }
 
-        sourceSquare.setPiece(null);
-        targetSquare.setPiece(pieceToMove);
-
         // check for promoted the pawn
-        if (pieceToMove instanceof Pawn && (targetSquare.getY() == 0 || targetSquare.getY() == 7)) {
-            promotePawn(targetSquare);
+        if (pieceToMove instanceof Pawn) {
+            if (!pieceToMove.isMoved() && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2) {
+                ((Pawn) pieceToMove).setEnPassantVulnerable(true);
+            }
+
+            if (targetSquare.getY() == 0 || targetSquare.getY() == 7) {
+                ((Pawn) pieceToMove).promotePawn();
+            }
         }
+
+        sourceSquare.setPiece(null);
+        pieceToMove.setMoved(true);
+        targetSquare.setPiece(pieceToMove);
 
         return true;
     }
@@ -104,33 +149,5 @@ public class BoardService {
         List<Square> validMoves = pieceToMove.abilityMoves(board);
 
         return validMoves.contains(targetSquare);
-    }
-
-    private void promotePawn(Square square) {
-        System.out.println("Pawn promotion! Enter the piece to promote to (Q, R, N, or B): ");
-        String promotionChoice = scanner.nextLine().toUpperCase();
-
-        Piece chosenPiece = square.getPiece();
-        Piece newPiece;
-
-        switch (promotionChoice) {
-            case "Q":
-                newPiece = new Queen(chosenPiece.getPieceSide());
-                break;
-            case "R":
-                newPiece = new Rook(chosenPiece.getPieceSide());
-                break;
-            case "N":
-                newPiece = new Knight(chosenPiece.getPieceSide());
-                break;
-            case "B":
-                newPiece = new Bishop(chosenPiece.getPieceSide());
-                break;
-            default:
-                System.out.println("Invalid promotion choice. Promoting to Queen by default.");
-                newPiece = new Queen(chosenPiece.getPieceSide());
-        }
-
-        square.setPiece(newPiece);
     }
 }

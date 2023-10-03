@@ -2,6 +2,7 @@ package domain.entities.pieces.movements;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.Rook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,5 +40,26 @@ public interface KingMovementLogic {
         }
 
         return squareList;
+    }
+
+    default boolean canCastle(Square[][] board, Square targetSquare) {
+        Piece king = (Piece) this;
+        Piece rook = targetSquare.getPiece();
+
+        if (king.isMoved() || rook.isMoved() || king.getPieceSide() != rook.getPieceSide()) {
+            return false;
+        }
+
+        int startX = Math.min(king.getSquare().getX(), rook.getSquare().getX()) + 1;
+        int endX = Math.max(king.getSquare().getX(), rook.getSquare().getX());
+        int y = king.getSquare().getY();
+
+        for (int i = startX; i < endX; i++) {
+            if (board[y][i].getPiece() != null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
