@@ -1,6 +1,8 @@
 package domain.entities;
 
-public class Square {
+import domain.entities.pieces.movements.Check;
+
+public class Square implements Check {
     private int x;
     private int y;
     private Piece piece;
