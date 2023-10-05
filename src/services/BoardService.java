@@ -8,14 +8,14 @@ import domain.entities.pieces.*;
 import domain.enums.PieceSide;
 
 import java.util.List;
-import java.util.Scanner;
 
 public class BoardService {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Board boardEntity;
     private final Square[][] board;
     private Piece enPassantVulnerable = null;
 
     public BoardService(Board boardEntity) {
+        this.boardEntity = boardEntity;
         this.board = boardEntity.getBoard();
         initializeBoard();
     }
@@ -140,6 +140,16 @@ public class BoardService {
         sourceSquare.setPiece(null);
         pieceToMove.setMoved(true);
         targetSquare.setPiece(pieceToMove);
+
+        Square kingSquare = boardEntity.findKing(pieceToMove.getPieceSide());
+        if (kingSquare.onCheck(board, pieceToMove.getPieceSide())){
+            System.out.println("you are in check state !!!");
+
+            sourceSquare.setPiece(pieceToMove);
+            pieceToMove.setMoved(false);
+            targetSquare.setPiece(capturedPiece);
+            return false;
+        }
 
         return true;
     }

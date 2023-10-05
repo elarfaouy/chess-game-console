@@ -2,6 +2,7 @@ package domain.entities.pieces.movements;
 
 import domain.entities.Piece;
 import domain.entities.Square;
+import domain.entities.pieces.King;
 import domain.enums.PieceSide;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface Check {
             for (int col = 0; col < 8; col++) {
                 Piece opponentPiece = board[row][col].getPiece();
 
-                if (opponentPiece != null && opponentPiece.getPieceSide() == opponentSide) {
+                if (opponentPiece != null && opponentPiece.getPieceSide() == opponentSide && !(opponentPiece instanceof King)) {
                     List<Square> attackingSquares = opponentPiece.abilityMoves(board);
 
                     if (attackingSquares.contains(square)) {
