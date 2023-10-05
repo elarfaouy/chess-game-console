@@ -47,15 +47,4 @@ public interface PawnMovementLogic {
 
         pawn.getSquare().setPiece(newPiece);
     }
-
-    default boolean canEnPassant(Square[][] board, Square targetSquare) {
-        Piece pawn = (Piece) this;
-
-        int axeYForEnPassant = pawn.getPieceSide().equals(PieceSide.WHITE) ? 3 : 4;
-        int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
-
-        Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
-
-        return opponentPawn instanceof Pawn && (opponentPawn.getSquare().getY() == pawn.getSquare().getY()) && (pawn.getSquare().getY() == axeYForEnPassant) && ((Pawn) opponentPawn).isEnPassantVulnerable();
-    }
 }

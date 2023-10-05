@@ -33,7 +33,7 @@ public interface KingMovementLogic {
 
             if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
                 Square square = board[newY][newX];
-                if (square.getPiece() == null || square.getPiece().getPieceSide() != king.getPieceSide()) {
+                if ((square.getPiece() == null || square.getPiece().getPieceSide() != king.getPieceSide()) && !square.onCheck(board, king.getPieceSide())) {
                     squareList.add(square);
                 }
             }
@@ -55,7 +55,11 @@ public interface KingMovementLogic {
         int y = king.getSquare().getY();
 
         for (int i = startX; i < endX; i++) {
-            if (board[y][i].getPiece() != null) {
+            // This first condition only applies when castling on the queen side,
+            // which is why I don't check the square near the rook if it is in check.
+            if (i == 1 && board[y][i].getPiece() != null) {
+                return false;
+            } else if (board[y][i].getPiece() != null || board[y][i].onCheck(board, king.getPieceSide())) {
                 return false;
             }
         }

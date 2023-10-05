@@ -8,13 +8,14 @@ import domain.entities.pieces.*;
 import domain.enums.PieceSide;
 
 import java.util.List;
-import java.util.Scanner;
 
 public class BoardService {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Board boardEntity;
     private final Square[][] board;
+    private Piece enPassantVulnerable = null;
 
     public BoardService(Board boardEntity) {
+        this.boardEntity = boardEntity;
         this.board = boardEntity.getBoard();
         initializeBoard();
     }
@@ -104,14 +105,12 @@ public class BoardService {
             }
 
             // check for en passant
-            boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) + Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2;
+            boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) == 1 && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 1;
             if (pieceToMove instanceof Pawn && capturedPiece == null && isTargetInRangeForEnPassant) {
-                Pawn pawn = (Pawn) pieceToMove;
+                int operation = pieceToMove.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
+                Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
 
-                if (pawn.canEnPassant(board, targetSquare)) {
-                    int operation = pawn.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
-                    Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
-
+                if (opponentPawn == enPassantVulnerable) {
                     sourceSquare.setPiece(null);
                     pieceToMove.setMoved(true);
                     targetSquare.setPiece(pieceToMove);
@@ -126,20 +125,31 @@ public class BoardService {
             return false;
         }
 
-        // check for promoted the pawn
-        if (pieceToMove instanceof Pawn) {
-            if (!pieceToMove.isMoved() && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2) {
-                ((Pawn) pieceToMove).setEnPassantVulnerable(true);
-            }
+        // here for is pawn in en passant state
+        if (pieceToMove instanceof Pawn && !pieceToMove.isMoved() && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2) {
+            enPassantVulnerable = pieceToMove;
+        } else {
+            enPassantVulnerable = null;
+        }
 
-            if (targetSquare.getY() == 0 || targetSquare.getY() == 7) {
-                ((Pawn) pieceToMove).promotePawn();
-            }
+        // check for promoted the pawn
+        if (pieceToMove instanceof Pawn && (targetSquare.getY() == 0 || targetSquare.getY() == 7)) {
+            ((Pawn) pieceToMove).promotePawn();
         }
 
         sourceSquare.setPiece(null);
         pieceToMove.setMoved(true);
         targetSquare.setPiece(pieceToMove);
+
+        Square kingSquare = boardEntity.findKing(pieceToMove.getPieceSide());
+        if (kingSquare.onCheck(board, pieceToMove.getPieceSide())){
+            System.out.println("you are in check state !!!");
+
+            sourceSquare.setPiece(pieceToMove);
+            pieceToMove.setMoved(false);
+            targetSquare.setPiece(capturedPiece);
+            return false;
+        }
 
         return true;
     }
