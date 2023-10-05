@@ -5,7 +5,6 @@ import domain.entities.Square;
 import domain.entities.pieces.movements.RookMovementLogic;
 import domain.enums.PieceSide;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Rook extends Piece implements RookMovementLogic {

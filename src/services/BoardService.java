@@ -20,6 +20,7 @@ public class BoardService {
         initializeBoard();
     }
 
+    // Initialize the chessboard with pieces
     public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -27,6 +28,12 @@ public class BoardService {
             }
         }
 
+        // Set up pieces on the chessboard
+        setupInitialPieces();
+    }
+
+    // Set up the initial state of chess pieces on the board
+    private void setupInitialPieces() {
         board[0][0].setPiece(new Rook(PieceSide.BLACK));
         board[0][1].setPiece(new Knight(PieceSide.BLACK));
         board[0][2].setPiece(new Bishop(PieceSide.BLACK));
@@ -52,6 +59,7 @@ public class BoardService {
         }
     }
 
+    // Print the chessboard to the console
     public void printChessboard() {
         String[] rows = {"8", "7", "6", "5", "4", "3", "2", "1"};
         String columns = "    a     b     c    d     e    f     g     h";
@@ -78,73 +86,42 @@ public class BoardService {
         System.out.println(columns);
     }
 
+    // Apply a move to the chessboard
     public boolean applyMove(Move move) {
         Square sourceSquare = move.getStartPosition();
         Square targetSquare = move.getEndPosition();
         Piece pieceToMove = move.getPiece();
         Piece capturedPiece = move.getCapturedPiece();
 
+        // Check if the move is valid using isValidMove method
         if (!isValidMove(sourceSquare, targetSquare)) {
-
-            // check for castling
-            if (pieceToMove instanceof King && capturedPiece instanceof Rook) {
-                King king = (King) pieceToMove;
-
-                if (king.canCastle(board, targetSquare)) {
-                    int isCastleQueenSide = targetSquare.getX() == 0 ? -1 : 1;
-                    board[sourceSquare.getY()][sourceSquare.getX() + 2 * isCastleQueenSide].setPiece(king);
-                    sourceSquare.setPiece(null);
-                    king.setMoved(true);
-
-                    board[sourceSquare.getY()][sourceSquare.getX() + isCastleQueenSide].setPiece(capturedPiece);
-                    targetSquare.setPiece(null);
-                    capturedPiece.setMoved(true);
-
-                    return true;
-                }
-            }
-
-            // check for en passant
-            boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) == 1 && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 1;
-            if (pieceToMove instanceof Pawn && capturedPiece == null && isTargetInRangeForEnPassant) {
-                int operation = pieceToMove.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
-                Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
-
-                if (opponentPawn == enPassantVulnerable) {
-                    sourceSquare.setPiece(null);
-                    pieceToMove.setMoved(true);
-                    targetSquare.setPiece(pieceToMove);
-
-                    opponentPawn.getSquare().setPiece(null);
-
-                    return true;
-                }
-            }
-
-            System.out.println("Invalid move. This piece cannot move to the target square.");
-            return false;
+            // Handle invalid moves, specifically for castling and en passant
+            return handleInvalidMove(sourceSquare, targetSquare, pieceToMove, capturedPiece);
         }
 
-        // here for is pawn in en passant state
+        // Handle en passant
         if (pieceToMove instanceof Pawn && !pieceToMove.isMoved() && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 2) {
             enPassantVulnerable = pieceToMove;
         } else {
             enPassantVulnerable = null;
         }
 
-        // check for promoted the pawn
+        // Handle pawn promotion
         if (pieceToMove instanceof Pawn && (targetSquare.getY() == 0 || targetSquare.getY() == 7)) {
             ((Pawn) pieceToMove).promotePawn();
         }
 
+        // Update the chessboard after a valid move
         sourceSquare.setPiece(null);
         pieceToMove.setMoved(true);
         targetSquare.setPiece(pieceToMove);
 
+        // Handle check state
         Square kingSquare = boardEntity.findKing(pieceToMove.getPieceSide());
         if (kingSquare.onCheck(board, pieceToMove.getPieceSide())){
-            System.out.println("you are in check state !!!");
+            System.out.println("Warning: Your king is in check!");
 
+            // Revert the move if it puts the king in check
             sourceSquare.setPiece(pieceToMove);
             pieceToMove.setMoved(false);
             targetSquare.setPiece(capturedPiece);
@@ -154,10 +131,51 @@ public class BoardService {
         return true;
     }
 
+    // Check if a move is valid
     public boolean isValidMove(Square sourceSquare, Square targetSquare) {
         Piece pieceToMove = sourceSquare.getPiece();
         List<Square> validMoves = pieceToMove.abilityMoves(board);
 
         return validMoves.contains(targetSquare);
+    }
+
+    private boolean handleInvalidMove(Square sourceSquare, Square targetSquare, Piece pieceToMove, Piece capturedPiece) {
+        // Handle invalid moves, specifically for castling
+        if (pieceToMove instanceof King && capturedPiece instanceof Rook) {
+            King king = (King) pieceToMove;
+
+            if (king.canCastle(board, targetSquare)) {
+                int isCastleQueenSide = targetSquare.getX() == 0 ? -1 : 1;
+                board[sourceSquare.getY()][sourceSquare.getX() + 2 * isCastleQueenSide].setPiece(king);
+                sourceSquare.setPiece(null);
+                king.setMoved(true);
+
+                board[sourceSquare.getY()][sourceSquare.getX() + isCastleQueenSide].setPiece(capturedPiece);
+                targetSquare.setPiece(null);
+                capturedPiece.setMoved(true);
+
+                return true;
+            }
+        }
+
+        // Handle invalid moves, specifically for en passant
+        boolean isTargetInRangeForEnPassant = Math.abs(sourceSquare.getX() - targetSquare.getX()) == 1 && Math.abs(sourceSquare.getY() - targetSquare.getY()) == 1;
+        if (pieceToMove instanceof Pawn && capturedPiece == null && isTargetInRangeForEnPassant) {
+            int operation = pieceToMove.getPieceSide().equals(PieceSide.WHITE) ? 1 : -1;
+            Piece opponentPawn = board[targetSquare.getY() + operation][targetSquare.getX()].getPiece();
+
+            if (opponentPawn == enPassantVulnerable) {
+                sourceSquare.setPiece(null);
+                pieceToMove.setMoved(true);
+                targetSquare.setPiece(pieceToMove);
+
+                opponentPawn.getSquare().setPiece(null);
+
+                return true;
+            }
+        }
+
+        // Handle all other invalid moves
+        return false;
     }
 }

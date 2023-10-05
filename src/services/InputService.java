@@ -16,28 +16,33 @@ public class InputService {
     private static final String namePlayerRegex = "^(?=.{3,10}$)[A-Za-z]+(?:\\s[A-Za-z]+)?$";
     private static final String inputSquareRegex = "[a-h][1-8]";
 
+    // Method to get a valid player name
     public static String getPlayerName(String player) {
         while (true) {
             System.out.print("Enter player " + player + " name: ");
             String name = scanner.nextLine();
 
+            // Check if the name matches the specified regex pattern
             if (name.matches(namePlayerRegex)) {
                 return name;
             }
 
-            System.out.println("\nThe player's name is not valid should be string and between 3, 10 chars !!!");
+            System.out.println("\nThe player's name is not valid; it should be a string between 3 and 10 characters.");
         }
     }
 
+    // Method to get valid square input (e.g., 'e2')
     public static Square getSquareInput(Board board) {
         while (true) {
             System.out.print("Enter the square (e.g., 'e2'): ");
             String input = scanner.nextLine().toLowerCase();
 
+            // Check if the input matches the specified regex pattern and has a valid format
             if (input.length() == 2 && input.matches(inputSquareRegex)) {
                 int column = input.charAt(0) - 'a';
                 int row = 7 - (input.charAt(1) - '1');
 
+                // Get the corresponding square from the board
                 return board.getSquare(row, column);
             }
 
@@ -45,10 +50,12 @@ public class InputService {
         }
     }
 
+    // Method to handle pawn promotion
     public static Piece getPromotePawn(PieceSide side) {
         System.out.print("Pawn promotion! Enter the piece to promote to (Q, R, N, or B): ");
         String promotionChoice = scanner.nextLine().toUpperCase();
 
+        // Based on the player's choice, return the corresponding promoted piece
         switch (promotionChoice) {
             case "Q":
                 return new Queen(side);
