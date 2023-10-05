@@ -1,10 +1,13 @@
 package services;
 
 import domain.entities.*;
+import domain.enums.GameResult;
 import domain.enums.PieceSide;
 
+import java.util.List;
+
 public class GameService {
-    private Game game = new Game();
+    private final Game game = new Game();
     private final Board boardEntity = new Board();
     private final BoardService boardService = new BoardService(boardEntity);
     private String playerWhite = "hicham"; // todo : just for testing after that should remove initialization
@@ -39,12 +42,13 @@ public class GameService {
             Square targetSquare = InputService.getSquareInput(boardEntity);
 
             Move move = new Move(sourceSquare, targetSquare, sourceSquare.getPiece(), targetSquare.getPiece());
-            if(!boardService.applyMove(move)) continue;
+            if (!boardService.applyMove(move)) continue;
 
             game.addHistoryMove(move);
 
             // Check for game end conditions (e.g., checkmate, stalemate)
             if (isGameEnd()) {
+                System.out.println(getCurrentPlayer() + " WIN");
                 break;
             }
 
@@ -54,9 +58,20 @@ public class GameService {
     }
 
     private boolean isGameEnd() {
-        // Check for game end conditions (e.g., checkmate, stalemate)
-        // ...
-        return false; // Modify this based on your game logic
+        PieceSide opponentSide = (currentPlayer == PieceSide.WHITE) ? PieceSide.BLACK : PieceSide.WHITE;
+        Square[][] board = boardEntity.getBoard();
+
+        if (isCheckmate(board, opponentSide)){
+            System.out.println("Checkmate");
+            game.setResult(currentPlayer.equals(PieceSide.WHITE) ? GameResult.WHITE_WIN : GameResult.BLACK_WIN);
+            return true;
+        } else if (isStalemate(board, opponentSide)){
+            System.out.println("Stalemate");
+            game.setResult(GameResult.DRAW);
+            return true;
+        }
+
+        return false;
     }
 
     private String getCurrentPlayer() {
@@ -76,6 +91,60 @@ public class GameService {
         if (sourceSquare.getPiece().getPieceSide() != currentPlayer) {
             System.out.println("Invalid move. The piece on the source square does not belong to you.");
             return false;
+        }
+
+        return true;
+    }
+
+    public boolean isCheckmate(Square[][] board, PieceSide side) {
+        Square opponentKingSquare = boardEntity.findKing(side);
+
+        if (!opponentKingSquare.onCheck(board, side)) {
+            return false;
+        }
+
+        // Check if any move by the opponent can get out of check
+        return isCurrentPlayerHasLegalMoves(board, side, opponentKingSquare);
+    }
+
+    private boolean isStalemate(Square[][] board, PieceSide side) {
+        Square opponentKingSquare = boardEntity.findKing(side);
+
+        if (opponentKingSquare.onCheck(board, side)) {
+            return false;
+        }
+
+        // Check for stalemate
+        return isCurrentPlayerHasLegalMoves(board, side, opponentKingSquare);
+    }
+
+    private boolean isCurrentPlayerHasLegalMoves(Square[][] board, PieceSide side, Square opponentKingSquare) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Square sourceSquare = boardEntity.getSquare(row, col);
+                Piece piece = sourceSquare.getPiece();
+
+                if (piece != null && piece.getPieceSide() == side) {
+                    List<Square> validMoves = piece.abilityMoves(board);
+
+                    for (Square targetSquare : validMoves) {
+                        // make move
+                        Piece capturedPiece = targetSquare.getPiece();
+                        targetSquare.setPiece(piece);
+                        sourceSquare.setPiece(null);
+
+                        boolean inCheck = opponentKingSquare.onCheck(board, side);
+
+                        // undo move
+                        sourceSquare.setPiece(piece);
+                        targetSquare.setPiece(capturedPiece);
+
+                        if (!inCheck) {
+                            return false;
+                        }
+                    }
+                }
+            }
         }
 
         return true;
